@@ -16,7 +16,7 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
 
-    @PostMapping
+    @PostMapping("/create/product")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> create(@RequestBody ProductRequest productRequest) {
         return ResponseEntity.ok(productService.create(productRequest));

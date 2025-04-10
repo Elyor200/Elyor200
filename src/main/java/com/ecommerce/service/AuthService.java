@@ -46,22 +46,26 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest loginRequest) {
         try {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
+            System.out.println("Login email: " + loginRequest.getEmail());
+            System.out.println("Login password: " + loginRequest.getPassword());
 
-//            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-//            UserDetails userDetails = userService.loadUserByUsername(loginRequest.getEmail());
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+
+            System.out.println("Authentication: " + authentication.isAuthenticated());
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            System.out.println("User authenticated: " + userDetails.getUsername());
+
+            String token = jwtUtil.generateToken(userDetails);
+            System.out.println("Generated token: " + token);
 
             return new AuthResponse(token);
-        } catch (BadCredentialsException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
-        } catch (DisabledException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is disabled");
-        } catch (LockedException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is locked");
-        } catch (AuthenticationException e) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authentication failed");
+
+        } catch (Exception e) {
+            System.out.println("Authentication failed: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login failed: " + e.getMessage());
         }
     }
 
