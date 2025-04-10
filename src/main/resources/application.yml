@@ -1,5 +1,3 @@
-
-
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
@@ -13,3 +11,6 @@ spring:
 server:
   port: 8081
 
+jwt:
+  secret: "supersecretkeythatshouldbeatleast32byteslong123"
+  expiration: 3600
