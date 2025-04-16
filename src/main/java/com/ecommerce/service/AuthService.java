@@ -3,6 +3,7 @@ package com.ecommerce.service;
 import com.ecommerce.dto.AuthResponse;
 import com.ecommerce.dto.LoginRequest;
 import com.ecommerce.dto.RegisterRequest;
+import com.ecommerce.dto.UserResponseDto;
 import com.ecommerce.jwt.JwtUtil;
 import com.ecommerce.model.User;
 import com.ecommerce.repository.UserRepository;
@@ -17,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
     private final UserRepository userRepository;
@@ -24,14 +27,16 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final OtpService otpService;
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder passwordEncoder2, UserService userService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder passwordEncoder2, UserService userService, OtpService otpService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
+        this.otpService = otpService;
     }
 
 
@@ -69,4 +74,41 @@ public class AuthService {
         }
     }
 
+    public UserResponseDto startAuth(Long chatId, String phoneNumber) {
+        User user = userRepository.findByChatId(chatId).orElseGet(() -> createNewUser(chatId, phoneNumber));
+
+        otpService.sendOtp(phoneNumber);
+        return mapToDto(user);
+    }
+
+    public UserResponseDto verifyOtp(Long chatId, String code) {
+        User user = userRepository.findByChatId(chatId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (otpService.validateOtp(user.getPhoneNumber(), code)) {
+            user.setIsVerified(true);
+            userRepository.save(user);
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid OTP");
+        }
+
+        return mapToDto(user);
+    }
+
+    private User createNewUser(Long chatId, String phoneNumber) {
+        User user = new User();
+        user.setChatId(chatId);
+        user.setPhoneNumber(phoneNumber);
+        user.setIsVerified(false);
+        return userRepository.save(user);
+    }
+
+    private UserResponseDto mapToDto(User user) {
+        UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setChatId(user.getChatId());
+        userResponseDto.setVerified(user.getIsVerified());
+        userResponseDto.setUserName(user.getUsername());
+        return userResponseDto;
+    }
+
 }
+

@@ -26,4 +26,16 @@ public class User {
 
     @Column(name = "role", nullable = false)
     private String role;
+
+    @Column(name = "chat_id")
+    private Long chatId;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "verification_code")
+    private String verificationCode;
+
+    @Column(nullable = true)
+    private Boolean isVerified;
 }

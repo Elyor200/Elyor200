@@ -2,11 +2,9 @@ package com.ecommerce.service.order;
 
 import com.ecommerce.dto.order.OrderItemResponse;
 import com.ecommerce.dto.order.OrderResponse;
-import com.ecommerce.model.CartItem;
-import com.ecommerce.model.Order;
-import com.ecommerce.model.OrderItem;
-import com.ecommerce.model.User;
+import com.ecommerce.model.*;
 import com.ecommerce.repository.CartItemRepository;
+import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.repository.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +20,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
+    private final ProductRepository productRepository;
+
 
     public OrderResponse placeOrder(String userEmail){
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
@@ -36,6 +36,7 @@ public class OrderService {
         List<OrderItem> orderItems = new ArrayList<>();
         double total = 0;
         for (CartItem item : cartItems) {
+            Product product = item.getProduct();
             OrderItem orderItem = new OrderItem();
             orderItem.setProductName(item.getProduct().getName());
             orderItem.setQuantity(item.getQuantity());
@@ -44,13 +45,20 @@ public class OrderService {
 
             total += item.getProduct().getPrice() * item.getQuantity();
             orderItems.add(orderItem);
+
+
+            product.setStock(product.getStock()-item.getQuantity());
+            productRepository.save(product);
         }
+
 
         order.setItems(orderItems);
         order.setTotalPrice(total);
 
+
         orderRepository.save(order);
-        cartItemRepository.deleteAll();
+        cartItemRepository.deleteAll(cartItems);
+
 
         return mapToResponse(order);
     }
@@ -62,7 +70,7 @@ public class OrderService {
                 .toList();
     }
 
-    public List<OrderResponse> getAllOrders(String userEmail){
+    public List<OrderResponse> getAllOrders(){
         return orderRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .toList();

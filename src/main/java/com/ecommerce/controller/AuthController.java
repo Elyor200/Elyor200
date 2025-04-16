@@ -4,6 +4,7 @@ import com.ecommerce.dto.AuthResponse;
 import com.ecommerce.dto.LoginRequest;
 import com.ecommerce.dto.RegisterRequest;
 import com.ecommerce.service.AuthService;
+import com.ecommerce.service.OtpService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final OtpService otpService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
@@ -33,4 +35,11 @@ public class AuthController {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + response.getToken())
                 .body(response);
     }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<String> sendOtp(@RequestParam String phoneNumber) {
+        otpService.sendOtp(phoneNumber);
+        return ResponseEntity.ok("Otp sent");
+    }
+
 }

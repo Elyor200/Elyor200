@@ -14,3 +14,5 @@ server:
 jwt:
   secret: "supersecretkeythatshouldbeatleast32byteslong123"
   expiration: 3600
+
+# Generated token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyM0BnbWFpbC5jb20iLCJpYXQiOjE3NDQ2NDM4MDYsImV4cCI6MTc0NDY3OTgwNn0.KGkS2-Ynr3SEr9-W2mQHOG4bGhX5fgN7NzWk9J_XHSc

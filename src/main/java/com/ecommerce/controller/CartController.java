@@ -20,8 +20,8 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<String> addToCart(@RequestBody CartItemRequest  cartItemRequest,
-                                            @AuthenticationPrincipal User user){
-        cartService.addToCart(user.getEmail(), cartItemRequest);
+                                            @AuthenticationPrincipal UserDetails userDetails){
+        cartService.addToCart(userDetails.getUsername(), cartItemRequest);
         return ResponseEntity.ok("Item added successfully");
     }
 

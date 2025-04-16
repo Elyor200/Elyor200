@@ -27,6 +27,10 @@ public class CartService {
         Product product = productRepository.findById(cartItemRequest.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
         CartItem cartItem = cartItemRepository.findByUserAndProduct(user, product).orElse(new CartItem(null, user, product, 0));
 
+        if (product.getStock() < cartItemRequest.getQuantity()) {
+            throw new RuntimeException("Product is out of stock");
+        }
+
         cartItem.setQuantity(cartItem.getQuantity() + cartItemRequest.getQuantity());
         cartItemRepository.save(cartItem);
     }
