@@ -43,6 +43,7 @@ public class AuthService {
     public void register(RegisterRequest registerRequest) {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
+        user.setPhoneNumber(registerRequest.getPhoneNumber());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole("ROLE_ADMIN");
