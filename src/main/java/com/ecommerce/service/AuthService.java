@@ -6,7 +6,10 @@ import com.ecommerce.dto.RegisterRequest;
 import com.ecommerce.dto.UserResponseDto;
 import com.ecommerce.jwt.JwtUtil;
 import com.ecommerce.model.User;
+import com.ecommerce.model.verification.EmailVerificationToken;
 import com.ecommerce.repository.UserRepository;
+import com.ecommerce.repository.verification.EmailTokenVerificationRepository;
+import com.ecommerce.service.verification.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
@@ -18,7 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -28,15 +33,19 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final OtpService otpService;
+    private final EmailTokenVerificationRepository emailTokenVerificationRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder passwordEncoder2, UserService userService, OtpService otpService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder passwordEncoder2, UserService userService, OtpService otpService, EmailTokenVerificationRepository emailTokenVerificationRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
         this.otpService = otpService;
+        this.emailTokenVerificationRepository = emailTokenVerificationRepository;
+        this.emailService = emailService;
     }
 
 
@@ -47,6 +56,17 @@ public class AuthService {
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole("ROLE_ADMIN");
+        user.setIsVerified(false);
+
+        String token = UUID.randomUUID().toString();
+        EmailVerificationToken verificationToken = new EmailVerificationToken();
+        verificationToken.setUser(user);
+        verificationToken.setToken(token);
+        verificationToken.setExpiryTime(LocalDateTime.now().plusMinutes(30));
+
+        emailService.sendConfirmationEmail(user.getEmail(), token);
+        emailTokenVerificationRepository.save(verificationToken);
+
         userRepository.save(user);
     }
 

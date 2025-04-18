@@ -11,6 +11,18 @@ spring:
 server:
   port: 8081
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: atabayev.elyor0219@gmail.com
+    password: gzzv xbdc ztse abkp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: "supersecretkeythatshouldbeatleast32byteslong123"
   expiration: 3600
