@@ -37,7 +37,15 @@ public class AuthService {
     private final EmailService emailService;
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil, PasswordEncoder passwordEncoder2, UserService userService, OtpService otpService, EmailTokenVerificationRepository emailTokenVerificationRepository, EmailService emailService) {
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
+                       JwtUtil jwtUtil,
+                       PasswordEncoder passwordEncoder2,
+                       UserService userService,
+                       OtpService otpService,
+                       EmailTokenVerificationRepository emailTokenVerificationRepository,
+                       EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -50,24 +58,24 @@ public class AuthService {
 
 
     public void register(RegisterRequest registerRequest) {
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPhoneNumber(registerRequest.getPhoneNumber());
-        user.setEmail(registerRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole("ROLE_ADMIN");
-        user.setIsVerified(false);
+        try {
+            User user = new User();
+            user.setUsername(registerRequest.getUsername());
+            user.setPhoneNumber(registerRequest.getPhoneNumber());
+            user.setEmail(registerRequest.getEmail());
+            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            user.setRole("ROLE_ADMIN");
+            user.setIsVerified(false);
+            userRepository.save(user);
 
-        String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken();
-        verificationToken.setUser(user);
-        verificationToken.setToken(token);
-        verificationToken.setExpiryTime(LocalDateTime.now().plusMinutes(30));
+            String token = UUID.randomUUID().toString();
+            String to = "atabayev.elyor0219@gmail.com";
+            emailService.sendConfirmationEmail(to, token, user);
 
-        emailService.sendConfirmationEmail(user.getEmail(), token);
-        emailTokenVerificationRepository.save(verificationToken);
-
-        userRepository.save(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error registering user" + e.getMessage());
+        }
     }
 
     public AuthResponse login(LoginRequest loginRequest) {

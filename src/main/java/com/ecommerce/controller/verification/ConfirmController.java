@@ -4,6 +4,8 @@ import com.ecommerce.model.verification.EmailVerificationToken;
 import com.ecommerce.repository.UserRepository;
 import com.ecommerce.repository.verification.EmailTokenVerificationRepository;
 
+import com.ecommerce.service.verification.EmailService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/confirm")
@@ -21,6 +24,17 @@ public class ConfirmController {
     public ConfirmController(EmailTokenVerificationRepository emailTokenVerificationRepository, UserRepository userRepository) {
         this.emailTokenVerificationRepository = emailTokenVerificationRepository;
         this.userRepository = userRepository;
+    }
+
+    @Autowired
+    private EmailService emailService;
+
+    @GetMapping("/test-email")
+    public String sendTestEmail(){
+        String to = "atabayev.elyor0219@gmail.com";
+        String token = UUID.randomUUID().toString();
+
+        return "Test Email Sent";
     }
 
     @GetMapping
